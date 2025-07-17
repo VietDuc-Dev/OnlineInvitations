@@ -9,6 +9,7 @@ import connectDatabase from "./database/db";
 import { errorHandler } from "./middlewares/errorHandler";
 import { BadRequestException } from "./common/utils/catch-errors";
 import { ErrorCode } from "./common/enums/error-code.enum";
+import authRoutes from "./modules/auth/auth.routes";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -36,6 +37,8 @@ app.get(
     });
   })
 );
+
+app.use(`${BASE_PATH}/auth`, authRoutes);
 
 app.use(errorHandler);
 
