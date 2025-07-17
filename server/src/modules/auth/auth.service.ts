@@ -143,4 +143,36 @@ export class AuthService {
       newRefreshToken,
     };
   }
+
+  public async verifyEmail(code: string) {
+    const validCode = await VerificationCodeModel.findOne({
+      code: code,
+      type: VerificationEnum.EMAIL_VERIFICATION,
+      expiresAt: { $gt: new Date() },
+    });
+    console.log("Valid Code:", code);
+
+    if (!validCode) {
+      throw new BadRequestException("Mã xác thực không hợp lệ");
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      validCode.userId,
+      { isEmailVerified: true },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new BadRequestException(
+        "Không tìm thấy người dùng",
+        ErrorCode.VALIDATION_ERROR
+      );
+    }
+
+    await validCode.deleteOne();
+
+    return {
+      user: updatedUser,
+    };
+  }
 }

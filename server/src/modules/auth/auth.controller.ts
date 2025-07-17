@@ -5,6 +5,7 @@ import { HTTPSTATUS } from "../../config/http.config";
 import {
   loginSchema,
   registerSchema,
+  verificationEmailSchema,
 } from "../../common/validators/auth.validator";
 import {
   getAccessTokenCookieOptions,
@@ -77,6 +78,18 @@ export class AuthController {
         .json({
           message: "Làm mới token thành công",
         });
+    }
+  );
+
+  public verifyEmail = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { code } = verificationEmailSchema.parse(req.body);
+
+      await this.authService.verifyEmail(code);
+
+      return res.status(HTTPSTATUS.OK).json({
+        message: "Email đã được xác thực thành công",
+      });
     }
   );
 }
