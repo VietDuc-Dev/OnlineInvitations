@@ -20,6 +20,8 @@ import { config } from "../../config/app.config";
 import SessionModel from "../../database/models/session.model";
 import UserModel from "../../database/models/user.model";
 import VerificationCodeModel from "../../database/models/verification.model";
+import { sendEmail } from "../../mailers/mailer";
+import { verifyEmailTemplate } from "../../mailers/templates/template";
 
 export class AuthService {
   public async register(registerData: RegisterDto) {
@@ -46,6 +48,18 @@ export class AuthService {
       type: VerificationEnum.EMAIL_VERIFICATION,
       expiresAt: fortyFiveMinutesFromNow(),
     });
+
+    const verificationUrl = `${config.APP_ORIGIN}/confirm-account?code=${verification.code}`;
+    const { error } = await sendEmail({
+      to: newUser.email,
+      ...verifyEmailTemplate(verificationUrl),
+    });
+
+    if (error) {
+      console.log("Error sending verification email:", error);
+
+      throw new BadRequestException("Không thể gửi email xác thực");
+    }
 
     return {
       user: newUser,
