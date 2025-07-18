@@ -3,12 +3,17 @@ import { VerificationEnum } from "../../common/enums/verification-code.enum";
 import { LoginDto, RegisterDto } from "../../common/interface/auth.interface";
 import {
   BadRequestException,
+  HttpException,
+  InternalServerException,
+  NotFoundException,
   UnauthorizedException,
 } from "../../common/utils/catch-errors";
 import {
+  anHourFromNow,
   calculateExpirationDate,
   fortyFiveMinutesFromNow,
   ONE_DAY_IN_MS,
+  threeMinutesAgo,
 } from "../../common/utils/date-time";
 import {
   refreshTokenSignOptions,
@@ -17,13 +22,18 @@ import {
   verifyJwtToken,
 } from "../../common/utils/jwt";
 import { config } from "../../config/app.config";
+import { HTTPSTATUS } from "../../config/http.config";
 import SessionModel from "../../database/models/session.model";
 import UserModel from "../../database/models/user.model";
 import VerificationCodeModel from "../../database/models/verification.model";
 import { sendEmail } from "../../mailers/mailer";
-import { verifyEmailTemplate } from "../../mailers/templates/template";
+import {
+  passwordResetTemplate,
+  verifyEmailTemplate,
+} from "../../mailers/templates/template";
 
 export class AuthService {
+  // --------------- REGISTER ---------------
   public async register(registerData: RegisterDto) {
     const { username, email, password } = registerData;
 
@@ -66,6 +76,7 @@ export class AuthService {
     };
   }
 
+  // --------------- LOGIN ---------------
   public async login(loginData: LoginDto) {
     const { email, password, userAgent } = loginData;
 
@@ -113,6 +124,7 @@ export class AuthService {
     };
   }
 
+  // --------------- REFRESH TOKEN ---------------
   public async refreshToken(refreshToken: string) {
     const { payload } = verifyJwtToken<RefreshTPayload>(refreshToken, {
       secret: refreshTokenSignOptions.secret,
@@ -158,6 +170,7 @@ export class AuthService {
     };
   }
 
+  // --------------- VERIFY EMAIL ---------------
   public async verifyEmail(code: string) {
     const validCode = await VerificationCodeModel.findOne({
       code: code,
@@ -187,6 +200,60 @@ export class AuthService {
 
     return {
       user: updatedUser,
+    };
+  }
+
+  // --------------- FORGOT PASSWORD ---------------
+  public async forgotPassword(email: string) {
+    const user = await UserModel.findOne({
+      email: email,
+    });
+
+    if (!user) {
+      throw new NotFoundException("Không tìm thấy người dùng với email này");
+    }
+
+    //check mail rate limit is 2 emails per 3 or 10 min
+    const timeAgo = threeMinutesAgo();
+    const maxAttempts = 2;
+
+    const count = await VerificationCodeModel.countDocuments({
+      userId: user._id,
+      type: VerificationEnum.PASSWORD_RESET,
+      createdAt: { $gt: timeAgo },
+    });
+
+    if (count >= maxAttempts) {
+      throw new HttpException(
+        "Bạn đã gửi quá nhiều yêu cầu trong thời gian ngắn, thử lại sau 5 phút.",
+        HTTPSTATUS.TOO_MANY_REQUESTS,
+        ErrorCode.AUTH_TOO_MANY_ATTEMPTS
+      );
+    }
+
+    const expiresAt = anHourFromNow();
+    const validCode = await VerificationCodeModel.create({
+      userId: user._id,
+      type: VerificationEnum.PASSWORD_RESET,
+      expiresAt,
+    });
+
+    const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
+      validCode.code
+    }&exp=${expiresAt.getTime()}`;
+
+    const { data, error } = await sendEmail({
+      to: user.email,
+      ...passwordResetTemplate(resetLink),
+    });
+
+    if (!data?.id) {
+      throw new InternalServerException(`${error?.name} ${error?.message}`);
+    }
+
+    return {
+      url: resetLink,
+      emailId: data.id,
     };
   }
 }

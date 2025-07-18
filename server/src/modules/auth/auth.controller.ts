@@ -3,6 +3,7 @@ import { asyncHandler } from "../../middlewares/asyncHandler";
 import { AuthService } from "./auth.service";
 import { HTTPSTATUS } from "../../config/http.config";
 import {
+  emailSchema,
   loginSchema,
   registerSchema,
   verificationEmailSchema,
@@ -21,6 +22,7 @@ export class AuthController {
     this.authService = authService;
   }
 
+  // --------------- REGISTER ---------------
   public register = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const body = registerSchema.parse({ ...req.body });
@@ -34,6 +36,7 @@ export class AuthController {
     }
   );
 
+  // --------------- LOGIN ---------------
   public login = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const userAgent = req.headers["user-agent"];
@@ -54,6 +57,7 @@ export class AuthController {
     }
   );
 
+  // --------------- REFRESH TOKEN ---------------
   public refreshToken = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const refreshToken = req.cookies.refreshToken as string | undefined;
@@ -81,6 +85,7 @@ export class AuthController {
     }
   );
 
+  // --------------- VERIFY EMAIL ---------------
   public verifyEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { code } = verificationEmailSchema.parse(req.body);
@@ -89,6 +94,19 @@ export class AuthController {
 
       return res.status(HTTPSTATUS.OK).json({
         message: "Email đã được xác thực thành công",
+      });
+    }
+  );
+
+  // --------------- FORGOT PASSWORD ---------------
+  public forgotPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const email = emailSchema.parse(req.body.email);
+      await this.authService.forgotPassword(email);
+
+      return res.status(HTTPSTATUS.OK).json({
+        message:
+          "Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư đến của bạn.",
       });
     }
   );
