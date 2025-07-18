@@ -10,6 +10,7 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { BadRequestException } from "./common/utils/catch-errors";
 import { ErrorCode } from "./common/enums/error-code.enum";
 import authRoutes from "./modules/auth/auth.routes";
+import passport from "passport";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -24,14 +25,11 @@ app.use(
 );
 
 app.use(cookieParser());
+app.use(passport.initialize());
 
 app.get(
   "/",
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    throw new BadRequestException(
-      "Bad request",
-      ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
-    );
     res.status(HTTPSTATUS.OK).json({
       message: "Online Invitation!!!",
     });
