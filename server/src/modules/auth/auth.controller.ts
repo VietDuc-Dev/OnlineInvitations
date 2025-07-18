@@ -6,9 +6,11 @@ import {
   emailSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   verificationEmailSchema,
 } from "../../common/validators/auth.validator";
 import {
+  clearAuthenticationCookies,
   getAccessTokenCookieOptions,
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
@@ -107,6 +109,19 @@ export class AuthController {
       return res.status(HTTPSTATUS.OK).json({
         message:
           "Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư đến của bạn.",
+      });
+    }
+  );
+
+  // --------------- RESET PASSWORD ---------------
+  public resetPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const body = resetPasswordSchema.parse(req.body);
+
+      await this.authService.resePassword(body);
+
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message: "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.",
       });
     }
   );
