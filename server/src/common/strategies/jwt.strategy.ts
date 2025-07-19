@@ -8,6 +8,7 @@ import { ErrorCode } from "../enums/error-code.enum";
 import { config } from "../../config/app.config";
 import passport, { PassportStatic } from "passport";
 import { userService } from "../../modules/user/user.module";
+import { AudienceEnum } from "../enums/audience-code.enum";
 
 interface JwtPayload {
   userId: string;
@@ -20,7 +21,7 @@ const options: StrategyOptionsWithRequest = {
       const accessToken = req.cookies.accessToken;
       if (!accessToken) {
         throw new UnauthorizedException(
-          "Unauthorized access token",
+          "Access token không hợp lệ",
           ErrorCode.AUTH_TOKEN_NOT_FOUND
         );
       }
@@ -28,7 +29,7 @@ const options: StrategyOptionsWithRequest = {
     },
   ]),
   secretOrKey: config.JWT.SECRET,
-  audience: ["user"],
+  audience: AudienceEnum.USER,
   algorithms: ["HS256"],
   passReqToCallback: true,
 };
@@ -38,6 +39,7 @@ export const setupJwtStrategy = (passport: PassportStatic) => {
     new JwtStrategy(options, async (req, payload: JwtPayload, done) => {
       try {
         const user = await userService.findUserById(payload.userId);
+
         if (!user) {
           return done(null, false);
         }

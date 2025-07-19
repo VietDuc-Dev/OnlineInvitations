@@ -15,7 +15,10 @@ import {
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
 } from "../../common/utils/cookie";
-import { UnauthorizedException } from "../../common/utils/catch-errors";
+import {
+  NotFoundException,
+  UnauthorizedException,
+} from "../../common/utils/catch-errors";
 
 export class AuthController {
   private authService: AuthService;
@@ -122,6 +125,20 @@ export class AuthController {
 
       return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
         message: "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.",
+      });
+    }
+  );
+
+  // --------------- LOGOUT ---------------
+  public logout = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const sessionId = req.sessionId;
+      if (!sessionId) {
+        throw new NotFoundException("Phiên làm việc không tìm thấy");
+      }
+      await this.authService.logout(sessionId);
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message: "Đăng xuất thành công",
       });
     }
   );

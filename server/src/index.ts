@@ -7,10 +7,8 @@ import { asyncHandler } from "./middlewares/asyncHandler";
 import { HTTPSTATUS } from "./config/http.config";
 import connectDatabase from "./database/db";
 import { errorHandler } from "./middlewares/errorHandler";
-import { BadRequestException } from "./common/utils/catch-errors";
-import { ErrorCode } from "./common/enums/error-code.enum";
 import authRoutes from "./modules/auth/auth.routes";
-import passport from "passport";
+import passport from "./middlewares/passport";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;

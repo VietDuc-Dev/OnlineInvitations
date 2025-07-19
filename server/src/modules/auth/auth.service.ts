@@ -182,7 +182,6 @@ export class AuthService {
       type: VerificationEnum.EMAIL_VERIFICATION,
       expiresAt: { $gt: new Date() },
     });
-    console.log("Valid Code:", code);
 
     if (!validCode) {
       throw new BadRequestException("Mã xác thực không hợp lệ");
@@ -293,5 +292,10 @@ export class AuthService {
     return {
       user: updatedUser,
     };
+  }
+
+  // --------------- LOGOUT ---------------
+  public async logout(sessionId: string) {
+    return await SessionModel.findByIdAndDelete(sessionId);
   }
 }
