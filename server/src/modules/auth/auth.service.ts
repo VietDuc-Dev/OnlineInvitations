@@ -270,7 +270,7 @@ export class AuthService {
     });
 
     if (!validCode) {
-      throw new NotFoundException("Invalid or expired verification code");
+      throw new NotFoundException("Mã xác thực không hợp lệ");
     }
 
     const hashedPassword = await hashValue(password);
@@ -280,7 +280,7 @@ export class AuthService {
     });
 
     if (!updatedUser) {
-      throw new BadRequestException("Failed to reset password!");
+      throw new BadRequestException("Đỗi mật khẩu không thành công!");
     }
 
     await validCode.deleteOne();
