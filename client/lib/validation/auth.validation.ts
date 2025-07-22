@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const formSchema = z
+export const registerSchema = z
   .object({
     username: z.string().trim().min(1, {
       message: "Bạn phải nhập tên",
@@ -19,3 +19,12 @@ export const formSchema = z
     message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
   });
+
+export const loginSchema = z.object({
+  email: z.string().trim().min(1, {
+    message: "Bạn phải nhập email",
+  }),
+  password: z.string().trim().min(1, {
+    message: "Bạn phải nhập mật khẩu",
+  }),
+});

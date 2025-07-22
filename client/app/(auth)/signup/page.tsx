@@ -15,7 +15,7 @@ import Image from "next/image";
 import BannerAuth from "@/public/images/banner-auth.jpg";
 import Link from "next/link";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
-import { formSchema } from "@/lib/validation/auth.validation";
+import { registerSchema } from "@/lib/validation/auth.validation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { registerMutationFn } from "@/lib/api/auth.api";
@@ -33,8 +33,8 @@ export default function SignupPage() {
     mutationFn: registerMutationFn,
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
       email: "",
@@ -43,7 +43,7 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: z.infer<typeof registerSchema>) => {
     if (!acceptedTerms) {
       toast.warning("Bạn cần đồng ý với điều khoản để tiếp tục.");
       return;
