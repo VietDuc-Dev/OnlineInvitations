@@ -32,3 +32,17 @@ export const loginSchema = z.object({
 export const emailSchema = z.object({
   email: z.string().trim().min(1, { message: "Bạn phải nhập email" }),
 });
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().trim().min(1, {
+      message: "Bạn phải nhập mật khẩu",
+    }),
+    confirmPassword: z.string().min(1, {
+      message: "Bạn phải nhập xác nhận mật khẩu",
+    }),
+  })
+  .refine((val) => val.password === val.confirmPassword, {
+    message: "Mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });

@@ -18,9 +18,15 @@ import { forgotPasswordMutationFn } from "@/lib/api/auth.api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { AlertCircleIcon, Loader, MailCheckIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  ArrowRight,
+  Loader,
+  MailCheckIcon,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
 
 export default function ForgotPassword() {
   const params = useSearchParams();
@@ -138,6 +144,11 @@ export default function ForgotPassword() {
                     <h2 className="text-xl tracking-[-0.16px] dark:text-[#fcfdffef] font-bold">
                       Kiểm tra email của bạn
                     </h2>
+                    <Link href="/signin" className="w-full">
+                      <Button className="w-full bg-primary text-primary-foreground text-center px-6 py-2 rounded-md shadow hover:opacity-90 transition">
+                        Đăng nhập <ArrowRight />
+                      </Button>
+                    </Link>
                   </>
                 )}
               </div>
