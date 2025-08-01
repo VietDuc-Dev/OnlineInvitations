@@ -2,8 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -16,18 +14,21 @@ import BannerAuth from "@/public/images/banner-auth.jpg";
 import Link from "next/link";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { loginSchema } from "@/lib/validation/auth.validation";
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { loginMutationFn } from "@/lib/api/auth.api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { Loader } from "lucide-react";
-import { toast } from "react-toastify";
+import { AlertCircleIcon, Loader, PopcornIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { useState } from "react";
 
 export default function SigninPage() {
   const router = useRouter();
+
+  const [isAlert, setIsAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginMutationFn,
@@ -48,10 +49,13 @@ export default function SigninPage() {
         //   router.replace(`/verify-mfa?email=${values.email}`);
         //   return;
         // }
+        setErrorMessage("");
+        setIsAlert(false);
         router.replace("/");
       },
       onError: (error) => {
-        toast.error(error.message);
+        setErrorMessage(error.message);
+        setIsAlert(true);
       },
     });
   };
@@ -122,12 +126,19 @@ export default function SigninPage() {
 
                   <div className="flex items-center space-x-2 text-sm xl:w-xl">
                     <Link
-                      href="/"
+                      href={`/forgot-password?email=${form.getValues().email}`}
                       className="underline-offset-4 hover:underline hover:text-primary"
                     >
                       Quên mật khẩu?
                     </Link>
                   </div>
+
+                  {isAlert && (
+                    <Alert variant="destructive">
+                      <AlertCircleIcon />
+                      <AlertTitle>{errorMessage}</AlertTitle>
+                    </Alert>
+                  )}
 
                   <Button
                     type="submit"

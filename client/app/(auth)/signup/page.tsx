@@ -22,12 +22,19 @@ import { registerMutationFn } from "@/lib/api/auth.api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { ArrowRight, Loader, MailCheckIcon } from "lucide-react";
-import { toast } from "react-toastify";
+import {
+  AlertCircleIcon,
+  ArrowRight,
+  Loader,
+  MailCheckIcon,
+} from "lucide-react";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 
 export default function SignupPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isAlert, setIsAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const { mutate, isPending } = useMutation({
     mutationFn: registerMutationFn,
@@ -44,16 +51,15 @@ export default function SignupPage() {
   });
 
   const onSubmit = (values: z.infer<typeof registerSchema>) => {
-    if (!acceptedTerms) {
-      toast.warning("Bạn cần đồng ý với điều khoản để tiếp tục.");
-      return;
-    }
     mutate(values, {
       onSuccess: () => {
+        setErrorMessage("");
+        setIsAlert(false);
         setIsSubmitted(true);
       },
       onError: (error) => {
-        toast.error(error.message);
+        setErrorMessage(error.message);
+        setIsAlert(true);
       },
     });
   };
@@ -169,6 +175,13 @@ export default function SignupPage() {
                         Tôi đồng ý với các điều khoản và chính sách bảo mật
                       </Label>
                     </div>
+
+                    {isAlert && (
+                      <Alert variant="destructive">
+                        <AlertCircleIcon />
+                        <AlertTitle>{errorMessage}</AlertTitle>
+                      </Alert>
+                    )}
 
                     <Button
                       type="submit"

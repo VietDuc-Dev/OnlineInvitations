@@ -28,3 +28,7 @@ export const loginSchema = z.object({
     message: "Bạn phải nhập mật khẩu",
   }),
 });
+
+export const emailSchema = z.object({
+  email: z.string().trim().min(1, { message: "Bạn phải nhập email" }),
+});
